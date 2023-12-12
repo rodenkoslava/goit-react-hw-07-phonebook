@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ContactListItem } from '../ContactListItem/ContactListItem';
 import {
@@ -5,30 +6,35 @@ import {
   StyledContactItem,
   StyledDeleteButton,
 } from './ContactList.styled';
-import { deleteContact } from '../../redux/contactsSlice';
-import { selectContacts, selectFilters } from '../../redux/selectors';
+import { deleteContact } from '../../redux/operations';
+import {
+  selectError,
+  selectIsLoading,
+  selectVisibleContacts,
+} from '../../redux/selectors';
 
 export const ContactList = () => {
-  const contacts = useSelector(selectContacts);
-  const filter = useSelector(selectFilters);
   const dispatch = useDispatch();
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+  const contactsByFilter = useSelector(selectVisibleContacts);
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
+  const handleDelete = id => dispatch(deleteContact(id));
 
   return (
-    <StyledContactList>
-      {filteredContacts.map(contact => (
-        <StyledContactItem key={contact.id}>
-          <ContactListItem contact={contact} />
-          <StyledDeleteButton
-            onClick={() => dispatch(deleteContact(contact.id))}
-          >
-            Delete
-          </StyledDeleteButton>
-        </StyledContactItem>
-      ))}
-    </StyledContactList>
+    <>
+      {error && <b>Something went wrong... Try reloading the page </b>}
+      {isLoading && !error && 'Loading...'}
+      <StyledContactList>
+        {contactsByFilter.map(contact => (
+          <StyledContactItem key={contact.id}>
+            <ContactListItem contact={contact} />
+            <StyledDeleteButton onClick={() => handleDelete(contact.id)}>
+              X
+            </StyledDeleteButton>
+          </StyledContactItem>
+        ))}
+      </StyledContactList>
+    </>
   );
 };
